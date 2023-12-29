@@ -3,9 +3,11 @@ import librosa
 import matplotlib.pyplot as plt
 from PIL import Image
 from io import BytesIO
+import numpy as np
 
 # Signalling function to process audio from input
-def signalling(audio):
+## Plots Amplitude against Time (Time Domain)
+def time_domain(audio):
     print(audio)
 
     # Process audio input from user
@@ -15,8 +17,15 @@ def signalling(audio):
     samples, sample_rate = librosa.load(audio_file, sr=None)
 
     # Create a plot
+    ## Calculate time values in seconds
+    time = np.linspace(0, len(samples) / sample_rate, num=len(samples))
+
+    # Create a plot
     plt.figure(figsize=(14, 5))
-    plt.plot(samples)
+    plt.plot(time, samples)
+    plt.xlabel('Time (s)')
+    plt.ylabel('Amplitude')
+
 
     # Save the plot to a buffer
     buf = BytesIO()
@@ -33,7 +42,7 @@ def signalling(audio):
 
 # Create a Gradio interface
 ul = gr.Interface(
-    fn=signalling,
+    fn=time_domain,
     inputs=gr.Audio(sources=["microphone"], type="filepath"),
     outputs="image"
 )
