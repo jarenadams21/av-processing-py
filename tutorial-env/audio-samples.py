@@ -6,8 +6,7 @@ from io import BytesIO
 import numpy as np
 
 # Signalling function to process audio from input
-## Plots Amplitude against Time (Time Domain)
-def time_domain(audio):
+def mel_spectrogram(audio):
     print(audio)
 
     # Process audio input from user
@@ -18,13 +17,24 @@ def time_domain(audio):
 
     # Create a plot
     ## Calculate time values in seconds
-    time = np.linspace(0, len(samples) / sample_rate, num=len(samples))
+    start_sample = 0  # Start at the beginning
+    end_sample = int(30 * sample_rate)  # End at 30 seconds
+    segment_samples = samples[start_sample:end_sample]
 
     # Create a plot
-    plt.figure(figsize=(14, 5))
-    plt.plot(time, samples)
-    plt.xlabel('Time (s)')
-    plt.ylabel('Amplitude')
+    # Calculate time values in seconds for the segment
+    time = np.linspace(0, len(segment_samples) / sample_rate, num=len(segment_samples))
+
+    # Create a Mel scale spectrogram for the segment
+    sgram = librosa.stft(segment_samples)
+    sgram_mag, _ = librosa.magphase(sgram)
+    mel_scale_sgram = librosa.feature.melspectrogram(S=sgram_mag, sr=sample_rate)
+    mel_sgram = librosa.amplitude_to_db(mel_scale_sgram, ref=np.min)
+
+    # Display the Mel spectrogram
+    librosa.display.specshow(mel_sgram, sr=sample_rate, x_axis='time', y_axis='mel')
+    plt.colorbar(format='%+2.0f dB')
+    plt.show()
 
 
     # Save the plot to a buffer
@@ -42,7 +52,7 @@ def time_domain(audio):
 
 # Create a Gradio interface
 ul = gr.Interface(
-    fn=time_domain,
+    fn=mel_spectrogram,
     inputs=gr.Audio(sources=["microphone"], type="filepath"),
     outputs="image"
 )
